@@ -1,51 +1,198 @@
+@font-face {
+    font-family: "Tetrizz";
+    src: url("assets/fonts/Tetrizz.ttf") format("truetype");
+}
+
+/* =====================
+   RESET & TEMEL AYARLAR
+===================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Tetrizz", Helvetica, sans-serif;
 }
 
 body {
     background-color: #0f1220;
     color: #ffffff;
     height: 100vh;
-    overflow: hidden;
+    width: 100vw;
+    overflow: hidden; /* Kaydırma çubuklarını gizler */
 }
 
+/* =====================
+   LAYOUT (ANA YAPI)
+===================== */
 .layout {
     display: flex;
-    height: 100%;
+    height: 100vh;
+    width: 100vw;
+    padding: 20px;
+    gap: 20px;
+    align-items: stretch; /* Elemanların boyunu eşitler */
 }
 
-/* LEFT */
+/* =====================
+   LEFT PANEL (SOL MENÜ)
+===================== */
 .left-container {
-    width: 33.3vw;
-    padding: 24px;
+    width: 320px;
+    min-width: 280px;
     display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Menüleri yukarı, orta ve aşağı dağıtır */
+    padding: 10px;
+    z-index: 10;
+}
+
+/* Üst Menü Linkleri */
+.top-menu {
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
+    gap: 15px;
+    border: 1px solid #ffffff;
 }
 
-.title {
-    font-size: 28px;
-    letter-spacing: 4px;
+.logo {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 10px;
 }
 
-/* GAME */
+.menu_box {
+    font-size: 14px;
+    padding: 5px 0;
+    cursor: pointer;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.menu_box::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0;
+    background: #00d2ff;
+    transition: width 0.3s ease;
+}
+
+.menu_box:hover::after {
+    width: 100%;
+}
+
+/* Skor Tablosu */
+.mid_menu {
+    margin: 30px 0;
+    border: 1px solid #ffffff;
+}
+
+.last_scores {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    
+}
+
+.best_score {
+    font-size: 20px;
+    color: #ffcc00;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+.score_box {
+    font-size: 16px;
+    color: #ccc;
+    font-weight: normal;
+    border: 1px solid #ffffff;
+}
+
+/* Alt Seviye Bilgisi */
+.bottom_menu {
+    padding-top: 20px;
+    border: 1px solid #ffffff;
+}
+
+.level_score {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid #ffffff;
+}
+
+.level_box {
+    font-size: 24px;
+    color: #00d2ff;
+    text-transform: uppercase;
+}
+
+/* =====================
+   GAME AREA (MERKEZ)
+===================== */
 .game-container {
-    width: 33.3vw;
+    flex: 2; /* Orta alanı genişletir */
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* RIGHT */
-.right-container {
-    width: 33.3vw;
+canvas {
+    background-color: #000;
+    border: 4px solid #ffffff;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+    
+    /* Yükseklik odaklı responsive yapı */
+    height: 85vh;
+    aspect-ratio: 1 / 2;
+    display: block;
 }
 
-/* CANVAS */
-canvas {
-    background-color: #111;
-    border: 3px solid white;
-    display: block;
+/* =====================
+   RIGHT PANEL (SAĞ BOŞLUK)
+===================== */
+.right-container {
+    width: 320px;
+    min-width: 280px;
+    /* İleride buraya "Sıradaki Taş" gelecek şekilde ayarlandı */
+}
+
+/* =====================
+   RESPONSIVE (MOBİL UYUMLU)
+===================== */
+@media (max-width: 1100px) {
+    .right-container {
+        display: none; /* Sağ paneli gizle, alanı genişlet */
+    }
+}
+
+@media (max-width: 768px) {
+    .left-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-around;
+        background: rgba(15, 18, 32, 0.9);
+        padding: 5px;
+    }
+    
+    .mid_menu, .menu_box:not(.logo) {
+        display: none; /* Mobilde sadece logo ve skor kalsın */
+    }
+
+    canvas {
+        height: 70vh;
+        margin-top: 60px;
+    }
 }
