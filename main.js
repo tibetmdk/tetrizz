@@ -7,41 +7,11 @@ const ctx = canvas.getContext("2d");
 const DEBUG_GRID = true;
 const COLS = 10;
 const ROWS = 20;
-const BLOCK_SIZE = canvas.width / COLS;
+
+let BLOCK_SIZE = 0;
 
 const DROP_INTERVAL = 500;
 const CLEAR_DELAY = 300;
-
-// ======================
-// BUTTONS
-// ======================
-const pauseButtons = {
-    resume: {
-        x: canvas.width / 2 - 60,
-        y: canvas.height / 2 + 10,
-        width: 120,
-        height: 40,
-        text: "RESUME"
-    },
-
-    retry: {
-         x: canvas.width / 2 - 60,
-         y: canvas.height / 2 + 50,
-         width: 120,
-        height: 40,
-        text: "RETRY"
-    }
-};
-
-const gameOverButtons = {
-    retry: {
-        x: canvas.width / 2 - 60,
-        y: canvas.height / 2 + 40,
-        width: 120,
-        height: 40,
-        text: "RETRY"
-    }
-};
 
 // ======================
 // GAME STATE
@@ -49,32 +19,23 @@ const gameOverButtons = {
 let gameOver = false;
 let isPaused = false;
 
-
-// ======================
-// RESET GAME
-// ======================
-function resetGame() {
-    // Grid temizle
-    for (let y = 0; y < ROWS; y++) {
-        grid[y].fill(0);
-    }
-
-    // State reset
-    gameOver = false;
-    isPaused = false;
-    clearingRows = [];
-    lastTime = 0;
-
-    // Yeni parça
-    active = spawnPiece();
-}
-
-
 // ======================
 // ROW CLEAR STATE
 // ======================
 let clearingRows = [];
 let clearStartTime = 0;
+
+// ======================
+// BUTTONS (RESPONSIVE)
+// ======================
+const pauseButtons = {
+    resume: {},
+    retry: {}
+};
+
+const gameOverButtons = {
+    retry: {}
+};
 
 // ======================
 // COLORS
@@ -108,6 +69,57 @@ const TETROMINOS = [
     [[1,0,0],[1,1,1]],
     [[0,0,1],[1,1,1]]
 ];
+
+// ======================
+// RESPONSIVE CANVAS
+// ======================
+function resizeCanvas() {
+    const container = document.querySelector(".game-container");
+    const maxHeight = window.innerHeight - 160;
+
+    let width = container.clientWidth;
+    let height = width * 2;
+
+    if (height > maxHeight) {
+        height = maxHeight;
+        width = height / 2;
+    }
+
+    canvas.width = Math.floor(width);
+    canvas.height = Math.floor(height);
+
+    BLOCK_SIZE = canvas.width / COLS;
+
+    // Button positions (relative)
+    const cx = canvas.width / 2;
+
+    pauseButtons.resume = {
+        x: cx - 60,
+        y: canvas.height / 2 + 10,
+        width: 120,
+        height: 40,
+        text: "RESUME"
+    };
+
+    pauseButtons.retry = {
+        x: cx - 60,
+        y: canvas.height / 2 + 60,
+        width: 120,
+        height: 40,
+        text: "RETRY"
+    };
+
+    gameOverButtons.retry = {
+        x: cx - 60,
+        y: canvas.height / 2 + 40,
+        width: 120,
+        height: 40,
+        text: "RETRY"
+    };
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
 // ======================
 // SPAWN PIECE
@@ -166,33 +178,24 @@ function rotatePiece() {
 }
 
 // ======================
-// FIX PIECE
+// FIX & CLEAR
 // ======================
 function fixPiece() {
     active.shape.forEach((row, y) =>
         row.forEach((cell, x) => {
-            if (cell) {
-                grid[active.y + y][active.x + x] = active.color;
-            }
+            if (cell) grid[active.y + y][active.x + x] = active.color;
         })
     );
 
     detectFullRows();
-    if (clearingRows.length === 0) {
-        active = spawnPiece();
-    }
+    if (clearingRows.length === 0) active = spawnPiece();
 }
 
-// ======================
-// DETECT FULL ROWS
-// ======================
 function detectFullRows() {
     clearingRows = [];
 
     for (let y = 0; y < ROWS; y++) {
-        if (grid[y].every(cell => cell !== 0)) {
-            clearingRows.push(y);
-        }
+        if (grid[y].every(c => c !== 0)) clearingRows.push(y);
     }
 
     if (clearingRows.length > 0) {
@@ -200,9 +203,6 @@ function detectFullRows() {
     }
 }
 
-// ======================
-// APPLY ROW CLEAR
-// ======================
 function applyRowClear(time) {
     if (clearingRows.length === 0) return;
 
@@ -211,7 +211,6 @@ function applyRowClear(time) {
             grid.splice(y, 1);
             grid.unshift(Array(COLS).fill(0));
         });
-
         clearingRows = [];
         active = spawnPiece();
     }
@@ -222,12 +221,7 @@ function applyRowClear(time) {
 // ======================
 function drawBlock(x, y, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(
-        x * BLOCK_SIZE,
-        y * BLOCK_SIZE,
-        BLOCK_SIZE,
-        BLOCK_SIZE
-    );
+    ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 }
 
 function drawGrid() {
@@ -246,46 +240,16 @@ function drawGrid() {
     }
 }
 
-function drawFixedBlocks(time) {
-    grid.forEach((row, y) =>
-        row.forEach((cell, x) => {
-            if (!cell) return;
-
-            if (clearingRows.includes(y)) {
-                const blink = Math.floor(time / 80) % 2;
-                if (blink === 0) return;
-            }
-
-            drawBlock(x, y, cell);
-        })
-    );
-}
-
-function drawActivePiece() {
-    active.shape.forEach((row, y) =>
-        row.forEach((cell, x) => {
-            if (cell) {
-                drawBlock(active.x + x, active.y + y, active.color);
-            }
-        })
-    );
-}
-
-function drawButton(btn, bgColor = "#00ff00") {
-    ctx.fillStyle = bgColor;
+function drawButton(btn, color) {
+    ctx.fillStyle = color;
     ctx.fillRect(btn.x, btn.y, btn.width, btn.height);
 
     ctx.fillStyle = "black";
     ctx.font = "18px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(
-        btn.text,
-        btn.x + btn.width / 2,
-        btn.y + btn.height / 2
-    );
+    ctx.fillText(btn.text, btn.x + btn.width / 2, btn.y + btn.height / 2);
 }
-
 
 function drawPause() {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
@@ -294,7 +258,7 @@ function drawPause() {
     ctx.fillStyle = "white";
     ctx.font = "32px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2 - 40);
 
     drawButton(pauseButtons.resume, "#00ff00");
     drawButton(pauseButtons.retry, "#ffcc00");
@@ -307,20 +271,27 @@ function drawGameOver() {
     ctx.fillStyle = "red";
     ctx.font = "32px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 40);
 
     drawButton(gameOverButtons.retry, "#ffcc00");
 }
 
 function draw(time) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     if (DEBUG_GRID) drawGrid();
 
-    drawFixedBlocks(time);
+    grid.forEach((row, y) =>
+        row.forEach((cell, x) => {
+            if (cell) drawBlock(x, y, cell);
+        })
+    );
 
     if (!gameOver && clearingRows.length === 0) {
-        drawActivePiece();
+        active.shape.forEach((row, y) =>
+            row.forEach((cell, x) => {
+                if (cell) drawBlock(active.x + x, active.y + y, active.color);
+            })
+        );
     }
 
     if (isPaused) drawPause();
@@ -336,15 +307,9 @@ function update(time = 0) {
     if (!gameOver && !isPaused) {
         applyRowClear(time);
 
-        if (
-            clearingRows.length === 0 &&
-            time - lastTime > DROP_INTERVAL
-        ) {
-            if (!collides(active, 0, 1)) {
-                active.y++;
-            } else {
-                fixPiece();
-            }
+        if (clearingRows.length === 0 && time - lastTime > DROP_INTERVAL) {
+            if (!collides(active, 0, 1)) active.y++;
+            else fixPiece();
             lastTime = time;
         }
     }
@@ -354,7 +319,7 @@ function update(time = 0) {
 }
 
 // ======================
-// CONTROLS
+// INPUT
 // ======================
 document.addEventListener("keydown", e => {
     if (e.key === "Escape" && !gameOver) {
@@ -362,7 +327,7 @@ document.addEventListener("keydown", e => {
         return;
     }
 
-    if (isPaused || gameOver || clearingRows.length > 0) return;
+    if (isPaused || gameOver) return;
 
     if (e.key === "ArrowLeft" && !collides(active, -1, 0)) active.x--;
     if (e.key === "ArrowRight" && !collides(active, 1, 0)) active.x++;
@@ -370,9 +335,23 @@ document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") rotatePiece();
 });
 
-// ======================
-// MOUSE CLICK
-// ======================
+canvas.addEventListener("click", e => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    if (isPaused) {
+        if (isInside(mx, my, pauseButtons.resume)) isPaused = false;
+        if (isInside(mx, my, pauseButtons.retry)) resetGame();
+    }
+
+    if (gameOver) {
+        if (isInside(mx, my, gameOverButtons.retry)) resetGame();
+    }
+});
 
 function isInside(x, y, btn) {
     return (
@@ -383,36 +362,13 @@ function isInside(x, y, btn) {
     );
 }
 
-canvas.addEventListener("click", e => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
-    // PAUSE BUTTONS
-    if (isPaused) {
-        const r = pauseButtons.resume;
-        const t = pauseButtons.retry;
-
-        if (isInside(mx, my, r)) {
-            isPaused = false;
-            return;
-        }
-
-        if (isInside(mx, my, t)) {
-            resetGame();
-            return;
-        }
-    }
-
-    // GAME OVER BUTTON
-    if (gameOver) {
-        const r = gameOverButtons.retry;
-
-        if (isInside(mx, my, r)) {
-            resetGame();
-        }
-    }
-});
+function resetGame() {
+    for (let y = 0; y < ROWS; y++) grid[y].fill(0);
+    gameOver = false;
+    isPaused = false;
+    clearingRows = [];
+    lastTime = 0;
+    active = spawnPiece();
+}
 
 update();
- 

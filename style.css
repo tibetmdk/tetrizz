@@ -8,47 +8,55 @@
 body {
     background-color: #0f1220;
     color: #ffffff;
-    display: flex;
-    flex-direction: row;
-    justify-content:center;
-    align-items:center;
-    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
 }
 
-.left-container {
+.layout {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 33.3vw;
+    height: 100vh;
+    width: 100%;
+}
+
+.left-container,
+.right-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 33.3vw;
-    border: 0px solid #ffffff;
-}
+    gap: 12px;
 
-.right-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 33.3vw;
+    width: 100%;
+    max-width: 420px;
+    padding: 12px;
 }
 
 .title {
     letter-spacing: 4px;
-    font-size: 32px;
-    font-weight: bold;
+    font-size: clamp(20px, 5vw, 32px);
+    text-align: center;
 }
 
 canvas {
+    width: 100%;
+    aspect-ratio: 1 / 2;
     background-color: #111;
-    border: 3px solid #ffffff;
+    border: 3px solid white;
+    display: block;
 }
 
-.info {
-    font-size: 18px;
+/* Küçük ekranlarda yan paneller gizlensin */
+@media (max-width: 900px) {
+    .left-container,
+    .right-container {
+        display: none;
+    }
 }
