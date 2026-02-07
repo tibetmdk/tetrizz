@@ -10,13 +10,65 @@ const ROWS = 20;
 const BLOCK_SIZE = canvas.width / COLS;
 
 const DROP_INTERVAL = 500;
-const CLEAR_DELAY = 300; // satır silme animasyon süresi (ms)
+const CLEAR_DELAY = 300;
+
+// ======================
+// BUTTONS
+// ======================
+const pauseButtons = {
+    resume: {
+        x: canvas.width / 2 - 60,
+        y: canvas.height / 2 + 10,
+        width: 120,
+        height: 40,
+        text: "RESUME"
+    },
+
+    retry: {
+         x: canvas.width / 2 - 60,
+         y: canvas.height / 2 + 50,
+         width: 120,
+        height: 40,
+        text: "RETRY"
+    }
+};
+
+const gameOverButtons = {
+    retry: {
+        x: canvas.width / 2 - 60,
+        y: canvas.height / 2 + 40,
+        width: 120,
+        height: 40,
+        text: "RETRY"
+    }
+};
 
 // ======================
 // GAME STATE
 // ======================
 let gameOver = false;
 let isPaused = false;
+
+
+// ======================
+// RESET GAME
+// ======================
+function resetGame() {
+    // Grid temizle
+    for (let y = 0; y < ROWS; y++) {
+        grid[y].fill(0);
+    }
+
+    // State reset
+    gameOver = false;
+    isPaused = false;
+    clearingRows = [];
+    lastTime = 0;
+
+    // Yeni parça
+    active = spawnPiece();
+}
+
 
 // ======================
 // ROW CLEAR STATE
@@ -132,7 +184,7 @@ function fixPiece() {
 }
 
 // ======================
-// DETECT FULL ROWS (ANIMATION START)
+// DETECT FULL ROWS
 // ======================
 function detectFullRows() {
     clearingRows = [];
@@ -149,7 +201,7 @@ function detectFullRows() {
 }
 
 // ======================
-// APPLY ROW CLEAR (AFTER ANIMATION)
+// APPLY ROW CLEAR
 // ======================
 function applyRowClear(time) {
     if (clearingRows.length === 0) return;
@@ -219,6 +271,47 @@ function drawActivePiece() {
     );
 }
 
+function drawButton(btn, bgColor = "#00ff00") {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(btn.x, btn.y, btn.width, btn.height);
+
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+        btn.text,
+        btn.x + btn.width / 2,
+        btn.y + btn.height / 2
+    );
+}
+
+
+function drawPause() {
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "32px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+
+    drawButton(pauseButtons.resume, "#00ff00");
+    drawButton(pauseButtons.retry, "#ffcc00");
+}
+
+function drawGameOver() {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "red";
+    ctx.font = "32px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+
+    drawButton(gameOverButtons.retry, "#ffcc00");
+}
+
 function draw(time) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -229,6 +322,9 @@ function draw(time) {
     if (!gameOver && clearingRows.length === 0) {
         drawActivePiece();
     }
+
+    if (isPaused) drawPause();
+    if (gameOver) drawGameOver();
 }
 
 // ======================
@@ -261,6 +357,11 @@ function update(time = 0) {
 // CONTROLS
 // ======================
 document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !gameOver) {
+        isPaused = !isPaused;
+        return;
+    }
+
     if (isPaused || gameOver || clearingRows.length > 0) return;
 
     if (e.key === "ArrowLeft" && !collides(active, -1, 0)) active.x--;
@@ -270,4 +371,48 @@ document.addEventListener("keydown", e => {
 });
 
 // ======================
+// MOUSE CLICK
+// ======================
+
+function isInside(x, y, btn) {
+    return (
+        x >= btn.x &&
+        x <= btn.x + btn.width &&
+        y >= btn.y &&
+        y <= btn.y + btn.height
+    );
+}
+
+canvas.addEventListener("click", e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // PAUSE BUTTONS
+    if (isPaused) {
+        const r = pauseButtons.resume;
+        const t = pauseButtons.retry;
+
+        if (isInside(mx, my, r)) {
+            isPaused = false;
+            return;
+        }
+
+        if (isInside(mx, my, t)) {
+            resetGame();
+            return;
+        }
+    }
+
+    // GAME OVER BUTTON
+    if (gameOver) {
+        const r = gameOverButtons.retry;
+
+        if (isInside(mx, my, r)) {
+            resetGame();
+        }
+    }
+});
+
 update();
+ 
