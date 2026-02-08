@@ -1,7 +1,6 @@
 import {
     COLS,
     ROWS,
-    DROP_INTERVAL,
     CLEAR_DELAY
 } from "./config.js";
 
@@ -32,6 +31,20 @@ import {
     updateTimer
 } from "./timerUtils.js";
 
+import {
+    initHold,
+    holdCurrentPiece,
+    enableHold,
+    drawHold
+} from "./holdUtils.js";
+
+import {
+    initScore,
+    addScore,
+    getLevel,
+    resetScore
+} from "./scoreUtils.js";
+
 /* ======================
    CANVAS
 ====================== */
@@ -40,6 +53,9 @@ const ctx = canvas.getContext("2d");
 
 const nextCanvas = document.getElementById("next-piece");
 const nextCtx = nextCanvas.getContext("2d");
+
+const holdCanvas = document.getElementById("hold-piece");
+const holdCtx = holdCanvas.getContext("2d");
 
 /* ======================
    STATE
@@ -51,12 +67,27 @@ let gameOver = false;
 let clearingRows = [];
 let clearStartTime = 0;
 
+let lastTime = 0;
+let dropInterval = 800;
+
+let softDrop = false;
+const SOFT_DROP_INTERVAL = 50;
+
 /* ======================
    GRID
 ====================== */
 const grid = Array.from({ length: ROWS }, () =>
     Array(COLS).fill(0)
 );
+
+/* ======================
+   SPEED TABLE
+====================== */
+function updateSpeed() {
+    const level = getLevel();
+    const table = [800, 720, 630, 550, 470, 380, 300, 220, 130, 100];
+    dropInterval = table[Math.min(level - 1, table.length - 1)];
+}
 
 /* ======================
    RESIZE
@@ -76,21 +107,26 @@ function resizeCanvas() {
     canvas.width = COLS * block;
     canvas.height = ROWS * block;
 
-    const nextSize = nextCanvas.clientWidth;
-    nextCanvas.width = nextSize;
-    nextCanvas.height = nextSize;
+    nextCanvas.width = nextCanvas.clientWidth;
+    nextCanvas.height = nextCanvas.clientWidth;
+
+    holdCanvas.width = holdCanvas.clientWidth;
+    holdCanvas.height = holdCanvas.clientWidth;
 }
 
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
 /* ======================
-   INIT PIECES + TIMER
+   INIT
 ====================== */
 let active = spawnPiece();
-initNext(spawnPiece());
 
+initNext(spawnPiece());
+initHold();
 initTimer("timer");
+initScore("score", "level");
+
 startTimer();
 
 /* ======================
@@ -108,13 +144,12 @@ function rotatePiece() {
 function fixPiece() {
     active.shape.forEach((row, y) =>
         row.forEach((cell, x) => {
-            if (cell) {
-                grid[active.y + y][active.x + x] = active.color;
-            }
+            if (cell) grid[active.y + y][active.x + x] = active.color;
         })
     );
 
     clearingRows = detectFullRows(grid);
+    enableHold();
 
     if (clearingRows.length > 0) {
         clearStartTime = performance.now();
@@ -136,8 +171,13 @@ function handleRowClear(time) {
     if (clearingRows.length === 0) return;
 
     if (time - clearStartTime >= CLEAR_DELAY) {
+        const cleared = clearingRows.length;
+
         applyRowClear(grid, clearingRows);
         clearingRows = [];
+
+        addScore(cleared);
+        updateSpeed();
 
         active = getNextPiece();
         setNextPiece(spawnPiece());
@@ -157,21 +197,20 @@ function draw() {
 
     drawGrid(ctx, COLS, ROWS, BLOCK_SIZE, canvas.width, canvas.height);
 
-    // sabit bloklar
     grid.forEach((row, y) =>
         row.forEach((cell, x) => {
             if (!cell) return;
 
             if (clearingRows.includes(y)) {
                 const blink = Math.floor(performance.now() / 80) % 2;
-                if (blink === 0) return;
+                if (blink === 0) drawBlock(ctx, x, y, BLOCK_SIZE, "white");
+                return;
             }
 
             drawBlock(ctx, x, y, BLOCK_SIZE, cell);
         })
     );
 
-    // aktif parça
     if (!gameOver && clearingRows.length === 0) {
         active.shape.forEach((row, y) =>
             row.forEach((cell, x) => {
@@ -191,25 +230,20 @@ function draw() {
     if (isPaused) drawPause(ctx, canvas.width, canvas.height);
     if (gameOver) drawGameOver(ctx, canvas.width, canvas.height);
 
-    // NEXT HUD
-    drawNext(
-        nextCtx,
-        getNextPiece(),
-        Math.floor(nextCanvas.width / 4),
-        nextCanvas.width
-    );
+    drawNext(nextCtx, getNextPiece(), Math.floor(nextCanvas.width / 4), nextCanvas.width);
+    drawHold(holdCtx, holdCanvas);
 }
 
 /* ======================
    LOOP
 ====================== */
-let lastTime = 0;
-
 function update(time = 0) {
     if (!isPaused && !gameOver) {
         handleRowClear(time);
 
-        if (clearingRows.length === 0 && time - lastTime > DROP_INTERVAL) {
+        const interval = softDrop ? SOFT_DROP_INTERVAL : dropInterval;
+
+        if (time - lastTime > interval) {
             if (!collides(active, grid, 0, 1)) {
                 active.y++;
             } else {
@@ -230,12 +264,7 @@ function update(time = 0) {
 document.addEventListener("keydown", e => {
     if (e.key === "Escape") {
         isPaused = !isPaused;
-
-        if (isPaused) {
-            pauseTimer();
-        } else {
-            startTimer();
-        }
+        isPaused ? pauseTimer() : startTimer();
         return;
     }
 
@@ -244,12 +273,34 @@ document.addEventListener("keydown", e => {
         return;
     }
 
-    if (isPaused || gameOver || clearingRows.length > 0) return;
+    if (isPaused || gameOver) return;
+
+    if (e.key.toLowerCase() === "c") {
+        const res = holdCurrentPiece(active, getNextPiece, setNextPiece, spawnPiece);
+        if (res.changed) active = res.active;
+        return;
+    }
+
+    if (e.key === "ArrowDown") {
+        softDrop = true;
+
+        // ANINDA 1 HÜCRE AŞAĞI
+        if (!collides(active, grid, 0, 1)) {
+            active.y++;
+            lastTime = performance.now();
+        }
+        return;
+    }
 
     if (e.key === "ArrowLeft" && !collides(active, grid, -1, 0)) active.x--;
     if (e.key === "ArrowRight" && !collides(active, grid, 1, 0)) active.x++;
-    if (e.key === "ArrowDown" && !collides(active, grid, 0, 1)) active.y++;
     if (e.key === "ArrowUp") rotatePiece();
+});
+
+document.addEventListener("keyup", e => {
+    if (e.key === "ArrowDown") {
+        softDrop = false;
+    }
 });
 
 /* ======================
@@ -258,15 +309,18 @@ document.addEventListener("keydown", e => {
 function resetGame() {
     for (let y = 0; y < ROWS; y++) grid[y].fill(0);
 
-    clearingRows = [];
-    isPaused = false;
     gameOver = false;
+    isPaused = false;
 
     active = spawnPiece();
-    setNextPiece(spawnPiece());
+    initNext(spawnPiece());
+    initHold();
 
+    resetScore();
     resetTimer();
     startTimer();
+
+    updateSpeed();
 }
 
 /* ======================
