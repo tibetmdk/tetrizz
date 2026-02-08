@@ -1,11 +1,14 @@
 @font-face {
     font-family: "Tetrizz";
     src: url("assets/fonts/Tetrizz.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
 /* =====================
-   RESET & TEMEL AYARLAR
+   RESET + BASE
 ===================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -17,57 +20,55 @@ body {
     background-color: #0f1220;
     color: #ffffff;
     height: 100vh;
-    width: 100vw;
-    overflow: hidden; /* Kaydırma çubuklarını gizler */
+    overflow: hidden;
 }
 
 /* =====================
-   LAYOUT (ANA YAPI)
+   LAYOUT
 ===================== */
+
 .layout {
     display: flex;
-    height: 100vh;
-    width: 100vw;
-    padding: 20px;
-    gap: 20px;
-    align-items: stretch; /* Elemanların boyunu eşitler */
+    height: 100%;
 }
 
 /* =====================
-   LEFT PANEL (SOL MENÜ)
+   LEFT CONTAINER
 ===================== */
+
 .left-container {
-    width: 320px;
-    min-width: 280px;
+    width: 33.3vw;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Menüleri yukarı, orta ve aşağı dağıtır */
-    padding: 10px;
-    z-index: 10;
+    justify-content: space-between;
 }
 
-/* Üst Menü Linkleri */
+/* =====================
+   TOP MENU
+===================== */
+
 .top-menu {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-    border: 1px solid #ffffff;
+    align-items: center;
+    flex-wrap: nowrap;   /* ❌ yarım kırılma yok */
 }
 
-.logo {
-    max-width: 180px;
-    height: auto;
-    margin-bottom: 10px;
-}
+/* =====================
+   MENU ITEM
+===================== */
 
 .menu_box {
-    font-size: 14px;
-    padding: 5px 0;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    overflow: hidden;
+    cursor: pointer;
+    white-space: nowrap;
+
+    padding: 6px 16px;
+    font-size: clamp(10px, 1vw, 14px);
 }
 
 .menu_box::after {
@@ -75,124 +76,150 @@ body {
     position: absolute;
     left: 0;
     bottom: 0;
+    width: 100%;
     height: 2px;
-    width: 0;
-    background: #00d2ff;
-    transition: width 0.3s ease;
+    background-color: white;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
 }
 
 .menu_box:hover::after {
-    width: 100%;
-}
-
-/* Skor Tablosu */
-.mid_menu {
-    margin: 30px 0;
-    border: 1px solid #ffffff;
-}
-
-.last_scores {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
-    border-radius: 8px;
-    
-}
-
-.best_score {
-    font-size: 20px;
-    color: #ffcc00;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 10px;
-    margin-bottom: 5px;
-}
-
-.score_box {
-    font-size: 16px;
-    color: #ccc;
-    font-weight: normal;
-    border: 1px solid #ffffff;
-}
-
-/* Alt Seviye Bilgisi */
-.bottom_menu {
-    padding-top: 20px;
-    border: 1px solid #ffffff;
-}
-
-.level_score {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    border: 1px solid #ffffff;
-}
-
-.level_box {
-    font-size: 24px;
-    color: #00d2ff;
-    text-transform: uppercase;
+    transform: translateX(0);
 }
 
 /* =====================
-   GAME AREA (MERKEZ)
+   LOGO
 ===================== */
-.game-container {
-    flex: 2; /* Orta alanı genişletir */
+
+.logo {
+    max-height: 80px;
+    width: auto;
+    display: block;
+}
+
+/* =====================
+   MID MENU
+===================== */
+
+.mid_menu {
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-canvas {
-    background-color: #000;
-    border: 4px solid #ffffff;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
-    
-    /* Yükseklik odaklı responsive yapı */
-    height: 85vh;
-    aspect-ratio: 1 / 2;
-    display: block;
+.last_scores {
+    width: 100%;
+    padding-top: 80px;
 }
 
 /* =====================
-   RIGHT PANEL (SAĞ BOŞLUK)
+   SCORES
 ===================== */
+
+.best_score {
+    padding: 10px;
+    border-bottom: 0px solid white;
+    font-size: clamp(14px, 1.4vw, 22px);
+    color: gold;
+}
+
+.score_box {
+    padding-top: 10px;
+    font-size: clamp(12px, 1.2vw, 18px);
+}
+
+/* =====================
+   BOTTOM MENU
+===================== */
+
+.bottom_menu {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.level_score {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.level_box {
+    padding-top: 40px;
+    font-size: clamp(14px, 1.5vw, 22px);
+    color: aqua;
+}
+
+/* =====================
+   GAME CONTAINER
+===================== */
+
+.game-container {
+    width: 33.3vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* =====================
+   RIGHT CONTAINER
+===================== */
+
 .right-container {
-    width: 320px;
-    min-width: 280px;
-    /* İleride buraya "Sıradaki Taş" gelecek şekilde ayarlandı */
+    width: 33.3vw;
 }
 
 /* =====================
-   RESPONSIVE (MOBİL UYUMLU)
+   CANVAS
 ===================== */
+
+canvas {
+    background-color: #111;
+    border: 3px solid white;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* =====================
+   MENU BREAKPOINT
+   YATAY SIĞMAZSA → DİKEY
+===================== */
+
 @media (max-width: 1100px) {
-    .right-container {
-        display: none; /* Sağ paneli gizle, alanı genişlet */
+    .top-menu {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .menu_box {
+        padding: 6px 0;
     }
 }
 
-@media (max-width: 768px) {
-    .left-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        justify-content: space-around;
-        background: rgba(15, 18, 32, 0.9);
-        padding: 5px;
-    }
-    
-    .mid_menu, .menu_box:not(.logo) {
-        display: none; /* Mobilde sadece logo ve skor kalsın */
+/* =====================
+   SMALL SCREEN ADJUST
+===================== */
+
+@media (max-width: 900px) {
+    .left-container,
+    .right-container {
+        width: 25vw;
     }
 
-    canvas {
-        height: 70vh;
-        margin-top: 60px;
+    .game-container {
+        width: 50vw;
+    }
+}
+
+@media (max-width: 600px) {
+    .left-container,
+    .right-container {
+        display: none;
+    }
+
+    .game-container {
+        width: 100vw;
     }
 }
