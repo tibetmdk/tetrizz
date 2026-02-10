@@ -41,8 +41,10 @@ import {
 import {
     initScore,
     addScore,
+    addDropScore,
     getLevel,
-    resetScore
+    resetScore,
+    saveScore
 } from "./scoreUtils.js";
 
 /* ======================
@@ -160,6 +162,7 @@ function fixPiece() {
         if (collides(active, grid)) {
             gameOver = true;
             pauseTimer();
+            saveScore();
         }
     }
 }
@@ -185,12 +188,13 @@ function handleRowClear(time) {
         if (collides(active, grid)) {
             gameOver = true;
             pauseTimer();
+            saveScore();
         }
     }
 }
 
 /* ======================
-   DRAW
+   DRAW (🔴 EKSİK OLAN BUYDU)
 ====================== */
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -203,7 +207,9 @@ function draw() {
 
             if (clearingRows.includes(y)) {
                 const blink = Math.floor(performance.now() / 80) % 2;
-                if (blink === 0) drawBlock(ctx, x, y, BLOCK_SIZE, "white");
+                if (blink === 0) {
+                    drawBlock(ctx, x, y, BLOCK_SIZE, "white");
+                }
                 return;
             }
 
@@ -230,7 +236,13 @@ function draw() {
     if (isPaused) drawPause(ctx, canvas.width, canvas.height);
     if (gameOver) drawGameOver(ctx, canvas.width, canvas.height);
 
-    drawNext(nextCtx, getNextPiece(), Math.floor(nextCanvas.width / 4), nextCanvas.width);
+    drawNext(
+        nextCtx,
+        getNextPiece(),
+        Math.floor(nextCanvas.width / 4),
+        nextCanvas.width
+    );
+
     drawHold(holdCtx, holdCanvas);
 }
 
@@ -246,6 +258,7 @@ function update(time = 0) {
         if (time - lastTime > interval) {
             if (!collides(active, grid, 0, 1)) {
                 active.y++;
+                addDropScore();
             } else {
                 fixPiece();
             }
@@ -262,12 +275,15 @@ function update(time = 0) {
    INPUT
 ====================== */
 document.addEventListener("keydown", e => {
+
+    // PAUSE
     if (e.key === "Escape") {
         isPaused = !isPaused;
         isPaused ? pauseTimer() : startTimer();
         return;
     }
 
+    // GAME OVER RESET
     if (gameOver && e.key.toLowerCase() === "r") {
         resetGame();
         return;
@@ -275,33 +291,43 @@ document.addEventListener("keydown", e => {
 
     if (isPaused || gameOver) return;
 
+    // 🔴 HOLD (C)
     if (e.key.toLowerCase() === "c") {
-        const res = holdCurrentPiece(active, getNextPiece, setNextPiece, spawnPiece);
-        if (res.changed) active = res.active;
+        const result = holdCurrentPiece(
+            active,
+            getNextPiece,
+            setNextPiece,
+            spawnPiece
+        );
+
+        if (result.changed) {
+            active = result.active;
+        }
         return;
     }
 
+    // SOFT DROP
     if (e.key === "ArrowDown") {
         softDrop = true;
 
-        // ANINDA 1 HÜCRE AŞAĞI
         if (!collides(active, grid, 0, 1)) {
             active.y++;
+            addDropScore();
             lastTime = performance.now();
         }
         return;
     }
 
+    // MOVE
     if (e.key === "ArrowLeft" && !collides(active, grid, -1, 0)) active.x--;
     if (e.key === "ArrowRight" && !collides(active, grid, 1, 0)) active.x++;
     if (e.key === "ArrowUp") rotatePiece();
 });
 
 document.addEventListener("keyup", e => {
-    if (e.key === "ArrowDown") {
-        softDrop = false;
-    }
+    if (e.key === "ArrowDown") softDrop = false;
 });
+
 
 /* ======================
    RESET

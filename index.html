@@ -13,42 +13,38 @@
     <!-- LEFT -->
     <div class="left-container">
 
-
-
         <div class="top-menu">
-
             <div class="menu_box">
                 <img src="assets/images/logo.png" alt="Tetrizz Logo" class="logo">
             </div>
-            <div class="menu_box">
-                Github
-            </div>
-            <div class="menu_box">
-                Contact
-            </div>
-            <div class="menu_box">
-                Others
-            </div>
-
+            <div class="menu_box">Github</div>
+            <div class="menu_box">Contact</div>
+            <div class="menu_box">Others</div>
         </div>
-
-
 
         <div class="mid_menu">
             <div class="last_scores">
-                <h3 class="best_score">Best Score : 12500</h1>
-                <h4 class="score_box">2. 12500</h4>
-                <h4 class="score_box">3. 12500</h4>
-                <h4 class="score_box">4. 12500</h4>
-                <h4 class="score_box">5. 12500</h4>
-                <h4 class="score_box">6. 12500</h4>
+                <h3 class="best_score">Best Score : 02246</h3>
+                <h4 class="score_box">2. 02070</h4>
+                <h4 class="score_box">3. 01449</h4>
+                <h4 class="score_box">4. 00974</h4>
+                <h4 class="score_box">5. 00262</h4>
+                <h4 class="score_box">6. 00232</h4>
             </div>
         </div>
 
+        <!-- 🔴 BOTTOM: TIME + LEVEL + SCORE -->
         <div class="bottom_menu">
             <div class="level_score">
-                <h1 class="level_box" id="level">level: 1</h1>
-                <h1 class="level_box" id="score">score: 0</h1>
+
+                <!-- TIME ARTIK BURADA -->
+                <div class="timer">
+                    <div class="next-title">TIME</div>
+                    <h1 id="timer">00:02</h1>
+                </div>
+
+                <h1 class="level_box" id="level">LEVEL: 1</h1>
+                <h1 class="level_box" id="score">SCORE: 3</h1>
 
             </div>
         </div>
@@ -72,15 +68,15 @@
             <canvas id="hold-piece"></canvas>
         </div>
 
-
-        <div class="timer">
-            <div class="next-title">TIME</div>
-            <h1 id="timer">00:00</h1>
+        <!-- SVG burada rahatça duracak -->
+        <div class="decor-svg">
+            <img src="assets/images/Esc-6.svg" alt="Decoration">
         </div>
 
     </div>
 
 </div>
+
 <script type="module" src="js/drawUtils.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
