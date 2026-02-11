@@ -16,9 +16,22 @@
 
 ---
 
+## 🎯 Project Purpose
+
+TETRIZZ was created as an open-source learning project with a clear objective:
+
+- To serve as a practical guide for developers who want to understand how HTML5 Canvas works in real-world game development.
+- To demonstrate how powerful **pure HTML and Vanilla JavaScript** can be without relying on external frameworks or game engines.
+- To improve my own software engineering skills by building a complete modular game architecture from scratch.
+- To design a clean, maintainable, and expandable codebase that others can study and learn from.
+
+This project intentionally avoids libraries and focuses entirely on low-level rendering, state management, and game logic.
+
+---
+
 ## 🎮 Demo
 
-> 🔗 Live version: *(buraya deploy linkini koy)*
+> 🔗 Live version: *(add your deploy link here)*
 
 ---
 
@@ -50,6 +63,7 @@
 - ⏱ Real-time timer
 - 🖱 Interactive canvas-based pause & retry buttons
 - 🎮 Arcade-style UI
+- 🧩 Fully modular architecture
 
 ---
 
@@ -69,5 +83,5 @@
 
 ## 🏗 Architecture
 
-The project is fully modular:
+The project is fully modular and organized by responsibility:
 
