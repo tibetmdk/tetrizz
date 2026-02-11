@@ -9,6 +9,7 @@
 <body>
 
 <div class="layout">
+
     <!-- LEFT -->
     <div class="left-container">
         <div class="top-menu">
@@ -64,7 +65,37 @@
             <img src="assets/images/Esc-6.svg" alt="Decoration">
         </div>
     </div>
+
 </div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contact-modal">
+    <div class="modal">
+        <button class="close-btn" id="close-modal">&times;</button>
+
+        <h2>Contact</h2>
+        <p class="modal-desc">
+            You can reach me through the links below.
+        </p>
+
+        <div class="contact-links">
+            <a href="https://github.com/tibetmdk" target="_blank">
+                GitHub
+            </a>
+
+            <a href="https://www.linkedin.com/in/tibetmidik" target="_blank">
+                LinkedIn
+            </a>
+
+            <a href="mailto:tibetmdk@gmail.com">
+                Email
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
 
 <!-- START SCREEN -->
 <div class="start-overlay" id="start-screen">
@@ -78,27 +109,6 @@
         <p class="start-hint">Press Enter to start</p>
     </div>
 </div>
-
-<!-- PAUSE SCREEN -->
-<div class="game-overlay" id="pause-overlay">
-    <div class="menu-box">
-        <h2>PAUSED</h2>
-        <button id="resume-btn">RESUME</button>
-        <button id="retry-btn">RETRY</button>
-    </div>
-</div>
-
-
-<!-- GAME OVER SCREEN -->
-<div class="game-overlay" id="gameover-overlay">
-    <div class="menu-box">
-        <h2>GAME OVER</h2>
-        <p id="final-score">Score: 0</p>
-        <p id="final-time">Time: 00:00</p>
-        <button id="retry-gameover-btn">RETRY</button>
-    </div>
-</div>
-
 
 <script type="module" src="js/main.js"></script>
 <script src="js/menu.js"></script>

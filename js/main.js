@@ -13,7 +13,8 @@ import {
     drawBlock,
     drawGrid,
     drawPause,
-    drawGameOver
+    drawGameOver,
+    setHoverButton
 } from "./drawUtils.js";
 
 import {
@@ -48,33 +49,15 @@ import {
 } from "./scoreUtils.js";
 
 /* ======================
-   START SCREEN STATE
+   START SCREEN
 ====================== */
 let gameStarted = false;
 
 const startScreen = document.getElementById("start-screen");
 const startBtn = document.getElementById("start-btn");
 
-/* ======================
-   PAUSE & GAME OVER OVERLAYS
-====================== */
-const pauseOverlay = document.getElementById("pause-overlay");
-const gameoverOverlay = document.getElementById("gameover-overlay");
-
-const finalScoreEl = document.getElementById("final-score");
-const finalTimeEl = document.getElementById("final-time");
-
-const resumeBtn = document.getElementById("resume-btn");
-const retryBtn = document.getElementById("retry-btn");
-
-const retryGameoverBtn = document.getElementById("retry-gameover-btn");
-
-/* ======================
-   START GAME
-====================== */
 function startGame() {
     if (gameStarted) return;
-
     gameStarted = true;
     startScreen.style.display = "none";
     resetTimer();
@@ -101,6 +84,106 @@ const nextCtx = nextCanvas.getContext("2d");
 const holdCanvas = document.getElementById("hold-piece");
 const holdCtx = holdCanvas.getContext("2d");
 
+
+/* ======================
+   CANVAS MOUSE EVENTS
+====================== */
+
+canvas.addEventListener("mousemove", e => {
+
+    if (!isPaused && !gameOver) {
+        setHoverButton(null);
+        return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const btnWidth = 200;
+    const btnHeight = 55;
+
+    const centerX = canvas.width / 2 - btnWidth / 2;
+
+    // Pause ekranı
+    if (isPaused) {
+
+        const resumeY = canvas.height / 2 - 20;
+        const retryY = resumeY + 70;
+
+        if (mouseX > centerX && mouseX < centerX + btnWidth &&
+            mouseY > resumeY && mouseY < resumeY + btnHeight) {
+            setHoverButton("resume");
+            return;
+        }
+
+        if (mouseX > centerX && mouseX < centerX + btnWidth &&
+            mouseY > retryY && mouseY < retryY + btnHeight) {
+            setHoverButton("retry");
+            return;
+        }
+    }
+
+    // Game Over ekranı
+    if (gameOver) {
+
+        const retryY = canvas.height / 2;
+
+        if (mouseX > centerX && mouseX < centerX + btnWidth &&
+            mouseY > retryY && mouseY < retryY + btnHeight) {
+            setHoverButton("retry");
+            return;
+        }
+    }
+
+    setHoverButton(null);
+});
+
+
+canvas.addEventListener("click", e => {
+
+    if (!isPaused && !gameOver) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const btnWidth = 200;
+    const btnHeight = 55;
+    const centerX = canvas.width / 2 - btnWidth / 2;
+
+    if (isPaused) {
+
+        const resumeY = canvas.height / 2 - 20;
+        const retryY = resumeY + 70;
+
+        if (mouseX > centerX && mouseX < centerX + btnWidth &&
+            mouseY > resumeY && mouseY < resumeY + btnHeight) {
+            isPaused = false;
+            startTimer();
+            return;
+        }
+
+        if (mouseX > centerX && mouseX < centerX + btnWidth &&
+            mouseY > retryY && mouseY < retryY + btnHeight) {
+            resetGame();
+            return;
+        }
+    }
+
+    if (gameOver) {
+
+        const retryY = canvas.height / 2;
+
+        if (mouseX > centerX && mouseX < centerX + btnWidth &&
+            mouseY > retryY && mouseY < retryY + btnHeight) {
+            resetGame();
+            return;
+        }
+    }
+});
+
+
 /* ======================
    STATE
 ====================== */
@@ -125,7 +208,7 @@ const grid = Array.from({ length: ROWS }, () =>
 );
 
 /* ======================
-   SPEED TABLE
+   SPEED
 ====================== */
 function updateSpeed() {
     const level = getLevel();
@@ -203,10 +286,6 @@ function fixPiece() {
             gameOver = true;
             pauseTimer();
             saveScore();
-
-            finalScoreEl.textContent = document.getElementById("score").textContent;
-            finalTimeEl.textContent = `Time: ${document.getElementById("timer").textContent}`;
-            gameoverOverlay.style.display = "flex";
         }
     }
 }
@@ -233,10 +312,6 @@ function handleRowClear(time) {
             gameOver = true;
             pauseTimer();
             saveScore();
-
-            finalScoreEl.textContent = document.getElementById("score").textContent;
-            finalTimeEl.textContent = `Time: ${document.getElementById("timer").textContent}`;
-            gameoverOverlay.style.display = "flex";
         }
     }
 }
@@ -251,13 +326,18 @@ function draw() {
 
     grid.forEach((row, y) =>
         row.forEach((cell, x) => {
+
             if (!cell) return;
 
+            // 🔥 ROW CLEAR BLINK EFFECT GERİ GELDİ
             if (clearingRows.includes(y)) {
+
                 const blink = Math.floor(performance.now() / 80) % 2;
+
                 if (blink === 0) {
                     drawBlock(ctx, x, y, BLOCK_SIZE, "white");
                 }
+
                 return;
             }
 
@@ -293,6 +373,7 @@ function draw() {
 
     drawHold(holdCtx, holdCanvas);
 }
+
 
 /* ======================
    LOOP
@@ -333,11 +414,15 @@ document.addEventListener("keydown", e => {
 
     if (!gameStarted) return;
 
-    if (gameOver) return;
+    if (gameOver) {
+        if (e.key.toLowerCase() === "r") {
+            resetGame();
+        }
+        return;
+    }
 
     if (e.key === "Escape") {
         isPaused = !isPaused;
-        pauseOverlay.style.display = isPaused ? "flex" : "none";
         isPaused ? pauseTimer() : startTimer();
         return;
     }
@@ -371,35 +456,28 @@ document.addEventListener("keydown", e => {
 });
 
 document.addEventListener("keyup", e => {
-    if (e.key === "ArrowDown") softDrop = false;
+    if (e.key === "ArrowDown") {
+        softDrop = false;
+    }
 });
 
-/* ======================
-   BUTTON ACTIONS
-====================== */
-resumeBtn.onclick = () => {
-    isPaused = false;
-    pauseOverlay.style.display = "none";
-    startTimer();
-};
-
-retryBtn.onclick = resetGame;
-retryGameoverBtn.onclick = resetGame;
-
 
 /* ======================
-   RESET / BACK
+   RESET
 ====================== */
 function resetGame() {
-    for (let y = 0; y < ROWS; y++) grid[y].fill(0);
+
+    // Grid temizle
+    for (let y = 0; y < ROWS; y++) {
+        grid[y].fill(0);
+    }
 
     gameOver = false;
     isPaused = false;
     lastTime = 0;
+    softDrop = false;
 
-    pauseOverlay.style.display = "none";
-    gameoverOverlay.style.display = "none";
-
+    // Yeni parça
     active = spawnPiece();
     initNext(spawnPiece());
     initHold();
@@ -409,12 +487,6 @@ function resetGame() {
     startTimer();
 
     updateSpeed();
-}
-
-function backToStart() {
-    resetGame();
-    gameStarted = false;
-    startScreen.style.display = "flex";
 }
 
 /* ======================
