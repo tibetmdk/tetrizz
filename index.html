@@ -9,16 +9,14 @@
 <body>
 
 <div class="layout">
-
     <!-- LEFT -->
     <div class="left-container">
-
         <div class="top-menu">
             <div class="menu_box">
                 <img src="assets/images/logo.png" alt="Tetrizz Logo" class="logo">
             </div>
-            <div class="menu_box">Github</div>
-            <div class="menu_box">Contact</div>
+            <div class="menu_box" id="github-btn">Github</div>
+            <div class="menu_box" id="contact-btn">Contact</div>
             <div class="menu_box">Others</div>
         </div>
 
@@ -33,19 +31,14 @@
             </div>
         </div>
 
-        <!-- 🔴 BOTTOM: TIME + LEVEL + SCORE -->
         <div class="bottom_menu">
             <div class="level_score">
-
-                <!-- TIME ARTIK BURADA -->
                 <div class="timer">
                     <div class="next-title">TIME</div>
-                    <h1 id="timer">00:02</h1>
+                    <h1 id="timer">00:00</h1>
                 </div>
-
                 <h1 class="level_box" id="level">LEVEL: 1</h1>
-                <h1 class="level_box" id="score">SCORE: 3</h1>
-
+                <h1 class="level_box" id="score">SCORE: 0</h1>
             </div>
         </div>
     </div>
@@ -57,7 +50,6 @@
 
     <!-- RIGHT -->
     <div class="right-container">
-
         <div class="next-wrapper">
             <div class="next-title">NEXT</div>
             <canvas id="next-piece"></canvas>
@@ -68,16 +60,47 @@
             <canvas id="hold-piece"></canvas>
         </div>
 
-        <!-- SVG burada rahatça duracak -->
         <div class="decor-svg">
             <img src="assets/images/Esc-6.svg" alt="Decoration">
         </div>
-
     </div>
-
 </div>
 
-<script type="module" src="js/drawUtils.js"></script>
+<!-- START SCREEN -->
+<div class="start-overlay" id="start-screen">
+    <div class="start-box">
+        <h1>TETRIZZ</h1>
+        <p class="start-desc">
+            Tetrizz is a personal open-source project.<br>
+            Feel free to reach out
+        </p>
+        <button id="start-btn">START</button>
+        <p class="start-hint">Press Enter to start</p>
+    </div>
+</div>
+
+<!-- PAUSE SCREEN -->
+<div class="game-overlay" id="pause-overlay">
+    <div class="menu-box">
+        <h2>PAUSED</h2>
+        <button id="resume-btn">RESUME</button>
+        <button id="retry-btn">RETRY</button>
+    </div>
+</div>
+
+
+<!-- GAME OVER SCREEN -->
+<div class="game-overlay" id="gameover-overlay">
+    <div class="menu-box">
+        <h2>GAME OVER</h2>
+        <p id="final-score">Score: 0</p>
+        <p id="final-time">Time: 00:00</p>
+        <button id="retry-gameover-btn">RETRY</button>
+    </div>
+</div>
+
+
 <script type="module" src="js/main.js"></script>
+<script src="js/menu.js"></script>
 </body>
 </html>

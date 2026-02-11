@@ -48,6 +48,48 @@ import {
 } from "./scoreUtils.js";
 
 /* ======================
+   START SCREEN STATE
+====================== */
+let gameStarted = false;
+
+const startScreen = document.getElementById("start-screen");
+const startBtn = document.getElementById("start-btn");
+
+/* ======================
+   PAUSE & GAME OVER OVERLAYS
+====================== */
+const pauseOverlay = document.getElementById("pause-overlay");
+const gameoverOverlay = document.getElementById("gameover-overlay");
+
+const finalScoreEl = document.getElementById("final-score");
+const finalTimeEl = document.getElementById("final-time");
+
+const resumeBtn = document.getElementById("resume-btn");
+const retryBtn = document.getElementById("retry-btn");
+
+const retryGameoverBtn = document.getElementById("retry-gameover-btn");
+
+/* ======================
+   START GAME
+====================== */
+function startGame() {
+    if (gameStarted) return;
+
+    gameStarted = true;
+    startScreen.style.display = "none";
+    resetTimer();
+    startTimer();
+}
+
+startBtn.addEventListener("click", startGame);
+
+document.addEventListener("keydown", e => {
+    if (!gameStarted && e.key === "Enter") {
+        startGame();
+    }
+});
+
+/* ======================
    CANVAS
 ====================== */
 const canvas = document.getElementById("game");
@@ -129,8 +171,6 @@ initHold();
 initTimer("timer");
 initScore("score", "level");
 
-startTimer();
-
 /* ======================
    ROTATE
 ====================== */
@@ -163,6 +203,10 @@ function fixPiece() {
             gameOver = true;
             pauseTimer();
             saveScore();
+
+            finalScoreEl.textContent = document.getElementById("score").textContent;
+            finalTimeEl.textContent = `Time: ${document.getElementById("timer").textContent}`;
+            gameoverOverlay.style.display = "flex";
         }
     }
 }
@@ -189,12 +233,16 @@ function handleRowClear(time) {
             gameOver = true;
             pauseTimer();
             saveScore();
+
+            finalScoreEl.textContent = document.getElementById("score").textContent;
+            finalTimeEl.textContent = `Time: ${document.getElementById("timer").textContent}`;
+            gameoverOverlay.style.display = "flex";
         }
     }
 }
 
 /* ======================
-   DRAW (🔴 EKSİK OLAN BUYDU)
+   DRAW
 ====================== */
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -250,6 +298,13 @@ function draw() {
    LOOP
 ====================== */
 function update(time = 0) {
+
+    if (!gameStarted) {
+        draw();
+        requestAnimationFrame(update);
+        return;
+    }
+
     if (!isPaused && !gameOver) {
         handleRowClear(time);
 
@@ -276,22 +331,19 @@ function update(time = 0) {
 ====================== */
 document.addEventListener("keydown", e => {
 
-    // PAUSE
+    if (!gameStarted) return;
+
+    if (gameOver) return;
+
     if (e.key === "Escape") {
         isPaused = !isPaused;
+        pauseOverlay.style.display = isPaused ? "flex" : "none";
         isPaused ? pauseTimer() : startTimer();
         return;
     }
 
-    // GAME OVER RESET
-    if (gameOver && e.key.toLowerCase() === "r") {
-        resetGame();
-        return;
-    }
+    if (isPaused) return;
 
-    if (isPaused || gameOver) return;
-
-    // 🔴 HOLD (C)
     if (e.key.toLowerCase() === "c") {
         const result = holdCurrentPiece(
             active,
@@ -299,17 +351,12 @@ document.addEventListener("keydown", e => {
             setNextPiece,
             spawnPiece
         );
-
-        if (result.changed) {
-            active = result.active;
-        }
+        if (result.changed) active = result.active;
         return;
     }
 
-    // SOFT DROP
     if (e.key === "ArrowDown") {
         softDrop = true;
-
         if (!collides(active, grid, 0, 1)) {
             active.y++;
             addDropScore();
@@ -318,7 +365,6 @@ document.addEventListener("keydown", e => {
         return;
     }
 
-    // MOVE
     if (e.key === "ArrowLeft" && !collides(active, grid, -1, 0)) active.x--;
     if (e.key === "ArrowRight" && !collides(active, grid, 1, 0)) active.x++;
     if (e.key === "ArrowUp") rotatePiece();
@@ -328,15 +374,31 @@ document.addEventListener("keyup", e => {
     if (e.key === "ArrowDown") softDrop = false;
 });
 
+/* ======================
+   BUTTON ACTIONS
+====================== */
+resumeBtn.onclick = () => {
+    isPaused = false;
+    pauseOverlay.style.display = "none";
+    startTimer();
+};
+
+retryBtn.onclick = resetGame;
+retryGameoverBtn.onclick = resetGame;
+
 
 /* ======================
-   RESET
+   RESET / BACK
 ====================== */
 function resetGame() {
     for (let y = 0; y < ROWS; y++) grid[y].fill(0);
 
     gameOver = false;
     isPaused = false;
+    lastTime = 0;
+
+    pauseOverlay.style.display = "none";
+    gameoverOverlay.style.display = "none";
 
     active = spawnPiece();
     initNext(spawnPiece());
@@ -349,7 +411,13 @@ function resetGame() {
     updateSpeed();
 }
 
+function backToStart() {
+    resetGame();
+    gameStarted = false;
+    startScreen.style.display = "flex";
+}
+
 /* ======================
-   START
+   START LOOP
 ====================== */
 update();
