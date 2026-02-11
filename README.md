@@ -38,16 +38,16 @@ This project intentionally avoids libraries and focuses entirely on low-level re
 ## 🖼 Preview
 
 ### 🏠 Main Screen
-![Main Screen](docs/images/main-screen.png)
+![Main Screen](docs/img/main_page.png)
 
 ### 🎯 Gameplay
-![Gameplay](docs/images/gameplay.png)
+![Gameplay](docs/img/in_game.png)
 
 ### ⏸ Pause Menu
-![Pause](docs/images/pause.png)
+![Pause](docs/img/pause_screen.png)
 
 ### 💀 Game Over
-![Game Over](docs/images/gameover.png)
+![Game Over](docs/img/game_over.png)
 
 > 📁 Put your screenshots inside: `docs/images/`
 
