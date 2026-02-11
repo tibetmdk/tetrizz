@@ -14,7 +14,7 @@ export function drawBlock(ctx, x, y, size, color) {
     ctx.fillStyle = color;
     ctx.fillRect(px, py, s, s);
 
-    ctx.fillStyle = "rgba(255,255,255,0.25)";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.fillRect(px, py, s, s * 0.15);
     ctx.fillRect(px, py, s * 0.15, s);
 

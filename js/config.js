@@ -6,8 +6,8 @@ export const DROP_INTERVAL = 500;
 export const CLEAR_DELAY = 300;
 
 export const COLORS = [
-    "#00ffff",
-    "#ffff00",
+    "#00ddff",
+    "#FFD900",
     "#a000f0",
     "#00ff00",
     "#ff0000",
