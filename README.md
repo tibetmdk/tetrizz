@@ -31,7 +31,7 @@ This project intentionally avoids libraries and focuses entirely on low-level re
 
 ## 🎮 Demo
 
-> 🔗 Live version: *(add your deploy link here)*
+> 🔗 Live version: https://www.tettrizz.com/
 
 ---
 
