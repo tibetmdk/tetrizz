@@ -1,4 +1,3 @@
-// rowUtils.js
 import { COLS } from "./config.js";
 
 export function detectFullRows(grid) {

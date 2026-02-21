@@ -1,4 +1,3 @@
-// spawnUtils.js
 import { COLS, TETROMINOS, COLORS } from "./config.js";
 
 /* ======================

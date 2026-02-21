@@ -329,7 +329,7 @@ function draw() {
 
             if (!cell) return;
 
-            // 🔥 ROW CLEAR BLINK EFFECT GERİ GELDİ
+            
             if (clearingRows.includes(y)) {
 
                 const blink = Math.floor(performance.now() / 80) % 2;

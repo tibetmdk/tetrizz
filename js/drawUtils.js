@@ -1,5 +1,3 @@
-// drawUtils.js
-
 let hoverButton = null; // "resume" | "retry" | null
 
 export function setHoverButton(name) {
@@ -46,7 +44,7 @@ export function drawGrid(ctx, cols, rows, size, width, height) {
 
 function drawButton(ctx, text, x, y, w, h, isHover) {
 
-    ctx.save(); // ⬅️ state kaydet
+    ctx.save(); 
 
     ctx.fillStyle = isHover ? "#ffffff" : "transparent";
     ctx.strokeStyle = "#ffffff";
@@ -61,7 +59,7 @@ function drawButton(ctx, text, x, y, w, h, isHover) {
     ctx.textBaseline = "middle";
     ctx.fillText(text, x + w / 2, y + h / 2);
 
-    ctx.restore(); // ⬅️ eski state geri yükle
+    ctx.restore();
 }
 
 

@@ -1,4 +1,3 @@
-// collisionUtils.js
 import { COLS, ROWS } from "./config.js";
 
 export function collides(piece, grid, dx = 0, dy = 0) {

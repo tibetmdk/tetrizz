@@ -1,4 +1,3 @@
-// holdUtils.js
 import { drawNext } from "./nextUtils.js";
 import { COLS } from "./config.js";
 
